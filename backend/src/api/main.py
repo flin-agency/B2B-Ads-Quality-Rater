@@ -1,5 +1,9 @@
 """FastAPI Main Application"""
 
+import warnings
+# Suppress Pydantic deprecation warnings from third-party libraries
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -189,13 +193,6 @@ async def analyze_ad_stream(
                 log_queue.put({"type": "log", "data": f"✅ Analysis complete! Result length: {len(str(result_text))} chars"})
                 result_holder["result"] = str(result_text)
 
-                # Cleanup temp file if it was created
-                if temp_file_path and os.path.exists(temp_file_path):
-                    try:
-                        os.unlink(temp_file_path)
-                    except:
-                        pass  # Ignore cleanup errors
-
                 # Stop flushing thread and get final output
                 stop_flushing.set()
                 flush_thread.join(timeout=1)
@@ -264,6 +261,14 @@ async def analyze_ad_stream(
                 await asyncio.sleep(0.1)
 
         crew_thread.join(timeout=1)
+
+        # Cleanup temp file after streaming is complete
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.unlink(temp_file_path)
+                logger.info("Cleaned up temp file", path=temp_file_path)
+            except Exception as e:
+                logger.warning("Failed to cleanup temp file", path=temp_file_path, error=str(e))
 
     return StreamingResponse(
         event_generator(),

@@ -64,7 +64,7 @@ trap cleanup INT TERM
 echo "→ Backend: http://localhost:8000"
 cd backend
 source venv/bin/activate
-python3 -m uvicorn src.api.main:app --reload --port 8000 > /dev/null 2>&1 &
+PYTHONWARNINGS="ignore::DeprecationWarning" python3 -m uvicorn src.api.main:app --reload --port 8000 > /dev/null 2>&1 &
 BACKEND_PID=$!
 cd ..
 

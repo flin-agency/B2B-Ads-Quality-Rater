@@ -1,173 +1,211 @@
-# ⚡ Quick Start Guide
+# 🚀 Quickstart - Ads Quality Rater
 
-Schnelle Anleitung zum Starten des Ads Quality Raters.
+**In 3 Schritten zur laufenden App!**
 
-## 🎯 Was ist das?
+## ⚡ Schnellstart mit `./start.sh`
 
-Ein KI-System das automatisch Werbeanzeigen und ihre Landingpages analysiert auf:
-- ✅ Visuelle Qualität
-- ✅ Copywriting-Konsistenz
-- ✅ Markenkonformität
-
-## 📋 Voraussetzungen
-
-- **Python 3.11+**
-- **Node.js 18+**
-- **Gemini API Key** (kostenlos: https://makersuite.google.com/app/apikey)
-
-## 🚀 Start in 3 Schritten
-
-### 1. Backend starten
+### 1️⃣ Environment-Variablen konfigurieren
 
 ```bash
-# Terminal 1
-cd backend
-
-# API Key konfigurieren
+# .env Datei erstellen
 cp .env.example .env
-# Editiere .env und füge deinen GEMINI_API_KEY ein
-
-# Virtual Environment aktivieren
-source venv/bin/activate
-
-# Server starten
-uvicorn src.api.main:app --reload --port 8000
 ```
 
-✅ Backend läuft auf: **http://localhost:8000**
-📖 API Docs: **http://localhost:8000/docs**
+Öffne `.env` und füge deinen Gemini API Key ein:
+
+```bash
+GEMINI_API_KEY=your-actual-gemini-api-key-here
+```
+
+> **API Key erhalten:** https://makersuite.google.com/app/apikey
+
+### 2️⃣ Alles starten
+
+```bash
+# Script ausführbar machen (einmalig)
+chmod +x start.sh
+
+# Backend + Frontend starten
+./start.sh
+```
+
+### 3️⃣ Fertig! 🎉
+
+Die App läuft jetzt auf:
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8000
+- **API Docs:** http://localhost:8000/docs
 
 ---
 
-### 2. Frontend starten
+## 📋 Was macht `./start.sh`?
+
+Das Script erledigt automatisch:
+
+1. ✅ **Prüft `.env` Datei**
+   - Warnt, falls `GEMINI_API_KEY` fehlt
+
+2. 📦 **Installiert Backend-Dependencies**
+   - Erstellt Python Virtual Environment (`backend/venv`)
+   - Installiert alle Python-Packages aus `requirements.txt`
+
+3. 📦 **Installiert Frontend-Dependencies**
+   - Installiert alle npm-Packages aus `package.json`
+
+4. 🚀 **Startet Backend-Server**
+   - Läuft auf Port 8000
+   - Auto-Reload aktiviert (Änderungen werden automatisch neu geladen)
+
+5. 🚀 **Startet Frontend-Server**
+   - Läuft auf Port 3000
+   - Next.js mit Turbopack (ultra-schnell)
+
+6. 🛑 **Stoppt beide Server mit `Ctrl+C`**
+   - Sauberes Herunterfahren beider Prozesse
+
+---
+
+## 🎯 App verwenden
+
+### In der Web-UI
+
+1. Öffne http://localhost:3000
+2. Fülle das Formular aus:
+   - **Ad-URL** oder **Ad-Bild hochladen**
+   - **Landingpage-URL**
+   - Optional: Zielgruppe, Kampagnenziel, Brand Guidelines
+3. Klicke **"Analyse starten"**
+4. Sieh zu, wie die KI-Agents in Echtzeit arbeiten
+5. Erhalte detaillierten Quality-Report
+
+### Via API (Terminal)
 
 ```bash
-# Terminal 2 (neues Terminal öffnen)
+curl -X POST http://localhost:8000/api/v1/analyze/stream \
+  -F "ad_url=https://example.com/ad.jpg" \
+  -F "landing_page_url=https://example.com/landing-page" \
+  -F "target_audience=B2B Decision Makers"
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### ❌ Problem: "GEMINI_API_KEY not set"
+
+**Lösung:**
+```bash
+# Prüfe .env Datei
+cat .env | grep GEMINI_API_KEY
+
+# Sollte ausgeben:
+# GEMINI_API_KEY=AIza...
+
+# Falls nicht, füge deinen Key in .env ein
+```
+
+### ❌ Problem: "Port 8000 already in use"
+
+**Lösung:**
+```bash
+# Stoppe Prozess auf Port 8000
+lsof -ti:8000 | xargs kill -9
+
+# Starte neu
+./start.sh
+```
+
+### ❌ Problem: "Port 3000 already in use"
+
+**Lösung:**
+```bash
+# Stoppe Prozess auf Port 3000
+lsof -ti:3000 | xargs kill -9
+
+# Starte neu
+./start.sh
+```
+
+### ❌ Problem: "Playwright browser not found"
+
+**Lösung:**
+```bash
+cd backend
+source venv/bin/activate
+playwright install chromium
+cd ..
+./start.sh
+```
+
+### ❌ Problem: "Permission denied: ./start.sh"
+
+**Lösung:**
+```bash
+# Script ausführbar machen
+chmod +x start.sh
+
+# Nochmal versuchen
+./start.sh
+```
+
+---
+
+## 🔄 Manueller Start (ohne start.sh)
+
+Falls du lieber manuell starten möchtest:
+
+### Backend (Terminal 1)
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 -m uvicorn src.api.main:app --reload --port 8000
+```
+
+### Frontend (Terminal 2)
+```bash
 cd frontend
-
-# Dependencies installieren (nur beim ersten Mal)
 npm install
-
-# Frontend starten
 npm run dev
 ```
 
-✅ Frontend läuft auf: **http://localhost:3000**
-
 ---
 
-### 3. Erste Analyse
+## 🛑 Server stoppen
 
-1. Öffne **http://localhost:3000** im Browser
-2. Gib URLs ein:
-   - **Ad-URL:** URL zu deinem Werbemotiv (JPG/PNG)
-   - **LP-URL:** URL zur Landingpage
-3. Klicke **"Analyse starten"**
-4. Warte 30-60 Sekunden ⏳
-5. Ergebnisse werden angezeigt! 🎉
-
-## 📊 Was du siehst
-
-Nach der Analyse bekommst du:
-
-- **Overall Score** (0-100 Punkte)
-- **Score Breakdown:**
-  - 🎨 Visuell (25% Gewicht)
-  - ✍️ Copywriting (35% Gewicht)
-  - 🏷️ Marke (40% Gewicht)
-- **Detaillierte Tabs:**
-  - Brand Compliance
-  - Copywriting Feedback
-  - Visuelle Analyse
-- **JSON-Export** zum Download
-
-## 🔧 Optional: Brand Guidelines
-
-Für bessere Brand-Compliance-Prüfung kannst du Guidelines als JSON hinzufügen:
-
-```json
-{
-  "tone_of_voice": ["professionell", "freundlich"],
-  "prohibited_words": ["billig", "kostenlos"],
-  "color_palette": {
-    "primary": "#FF6B35"
-  }
-}
+### Mit start.sh
+```bash
+# Einfach Ctrl+C im Terminal drücken
+# Script stoppt automatisch beide Server
 ```
 
-Beispiel: `backend/config/brand_guidelines/example_brand.json`
-
-## ❓ Troubleshooting
-
-### Backend startet nicht?
-
+### Manuell
 ```bash
-# Prüfe ob Port 8000 frei ist
+# Alle Prozesse stoppen
 lsof -ti:8000 | xargs kill -9
-
-# Neu starten
-uvicorn src.api.main:app --reload --port 8000
+lsof -ti:3000 | xargs kill -9
 ```
-
-### Frontend zeigt Fehler?
-
-```bash
-# Prüfe ob Backend läuft
-curl http://localhost:8000/health
-
-# Sollte zurückgeben:
-# {"status":"healthy",...}
-```
-
-### API Key fehlt?
-
-```bash
-# Editiere backend/.env
-nano backend/.env
-
-# Füge ein:
-GEMINI_API_KEY=dein-key-hier
-```
-
-API Key erhalten: https://makersuite.google.com/app/apikey
-
-## 📚 Weiterführende Docs
-
-- **README.md** - Vollständige Dokumentation
-- **PRD.md** - Product Requirements
-- **PLANNING.md** - Technische Details
-- **backend/README.md** - Backend-spezifisch
-- **frontend/README.md** - Frontend-spezifisch
-
-## 💡 Beispiel-URLs zum Testen
-
-Du kannst mit echten Websites testen:
-
-**Ad-URL:** Ein beliebiges Werbebild (muss öffentlich erreichbar sein)
-**LP-URL:** Die dazugehörige Landingpage
-
-Beispiel:
-- Ad: Link zu deinem Marketing-Material
-- LP: Deine Produkt- oder Service-Seite
-
-## ✅ Erfolgreicher Test
-
-Wenn du das siehst, läuft alles:
-
-1. Backend-Terminal: `INFO: Application startup complete`
-2. Frontend-Terminal: `Local: http://localhost:3000`
-3. Browser: Formular ist sichtbar
-4. Nach Analyse: Score wird angezeigt
-
-## 🎉 Fertig!
-
-Du kannst jetzt beliebig viele Analysen durchführen.
-
-Bei Problemen:
-- Backend-Logs prüfen (Terminal 1)
-- Frontend-Logs prüfen (Terminal 2)
-- Browser-Console öffnen (F12)
 
 ---
 
-**Happy Testing! 🚀**
+## 💡 Tipps
+
+- **Erste Analyse:** Nutze die Beispiel-URLs aus der UI
+- **Brand Guidelines:** Schau dir `backend/config/brand_guidelines/example_brand.json` an
+- **API erkunden:** Öffne http://localhost:8000/docs (Swagger UI)
+- **Logs ansehen:** Das Terminal zeigt alle Agent-Aktivitäten in Echtzeit
+
+---
+
+## 📚 Weitere Infos
+
+- **Vollständige Doku:** [README.md](README.md)
+- **Architektur:** Siehe "Multi-Agent-System" in README.md
+- **API Referenz:** http://localhost:8000/docs
+
+---
+
+**Das wars! Viel Spaß beim Analysieren deiner Ads! 🎯**
+
+*Bei Fragen: team@flin.com*

@@ -1,6 +1,6 @@
 """Trafilatura Parser Tool - Fast Path for Static Pages"""
 
-from crewai_tools import tool
+from crewai.tools import tool
 from typing import Any
 import trafilatura
 import requests

@@ -1,6 +1,6 @@
 """Gemini Vision Tool for Ad Image Analysis"""
 
-from crewai_tools import tool
+from crewai.tools import tool
 from typing import Optional, Any
 from google import genai
 from google.genai import types
@@ -23,21 +23,20 @@ def get_gemini_client():
 
 
 @tool("Gemini Vision Analyzer")
-def analyze_ad_image(image_url: str, prompt: Optional[str] = None) -> dict:
+def analyze_ad_image(image_url: str) -> dict:
     """Analyzes advertisement images using Gemini 2.5 Flash Vision.
 
-    REQUIRED Parameter:
-    - image_url (string): The URL, local file path, or data URL to the ad image
+    Args:
+        image_url: The URL or local file path to the ad image (required)
 
-    OPTIONAL Parameter:
-    - prompt (string): Custom analysis instructions. If not provided, uses comprehensive ad analysis.
+    Returns:
+        JSON with 'success' (bool), 'analysis' (string), and 'image_source' (string)
+        The analysis includes: colors, composition quality, emotional tone, CTA visibility, and brand elements.
 
-    SIMPLE USAGE - Just provide the image URL:
-    {"image_url": "/tmp/tmpX1Y2Z3.jpg"}
-
-    Returns: JSON with 'success' (bool), 'analysis' (string), and 'image_source' (string)
-    The analysis includes: colors, composition quality, emotional tone, CTA visibility, and brand elements.
+    Example:
+        analyze_ad_image("/tmp/tmpX1Y2Z3.jpg")
     """
+    prompt = None  # Always use default prompt
     try:
         # Get Gemini client
         client, model_name = get_gemini_client()

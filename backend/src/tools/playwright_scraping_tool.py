@@ -1,6 +1,6 @@
 """Playwright Scraping Tool for Landing Page Content Extraction"""
 
-from crewai_tools import tool
+from crewai.tools import tool
 from typing import Any
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 import trafilatura
