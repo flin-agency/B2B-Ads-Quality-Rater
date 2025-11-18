@@ -14,11 +14,6 @@ from agents.copywriting_expert import create_copywriting_expert
 from agents.brand_consistency_agent import create_brand_consistency_agent
 from agents.quality_rating_synthesizer import create_quality_rating_synthesizer
 
-from models.ad_quality_report import AdQualityReport
-from models.visual_analysis import VisualAnalysis
-from models.copywriting_feedback import CopywritingFeedback
-from models.brand_compliance import BrandCompliance
-
 
 class AdQualityRaterCrew:
     """
@@ -56,25 +51,25 @@ class AdQualityRaterCrew:
 
         # Task 1: Analyze Ad Visuals
         analyze_ad_task = Task(
-            description=f"""Analysiere das Werbemotiv mit dem Gemini Vision Analyzer Tool EINMAL.
+            description=f"""Analyze the ad visual using Gemini Vision Tool.
 
-            **TOOL AUFRUF:**
-            {{"image_url": "{self.ad_url}"}}
+            **Tool:** {{"image_url": "{self.ad_url}"}}
+            **Target Audience:** {self.target_audience}
 
-            **Zielgruppe:** {self.target_audience}
+            **Evaluate and provide constructive feedback:**
+            1. Format: 1:1 (optimal) or other? Score: X/100
+            2. Authenticity: Stock photo or authentic?
+            3. Text Overlay: Max 7 words (best practice) or more?
+            4. Thumb-Stopper: Would you stop scrolling? Yes/No
+            5. CTA visibility? Score: X/100
+            6. Colors: [Hex codes]
 
-            Schreibe eine klare TEXT-ANALYSE nach LinkedIn B2B Best Practices:
-            - Format (1:1, horizontal?) und Composition Score (0-100)
-            - Authentizität (Stockfoto vs. echt)
-            - Text-Overlay (Billboard Rule: max 7 Wörter?)
-            - Emotionale Wirkung & Thumb-Stopper Effekt
-            - CTA-Sichtbarkeit (0-100)
-            - Dominante Farben (Hex-Codes)
-            - Verbesserungsvorschläge
+            **Improvement:** Specific recommendation OR "Good as is"
 
-            Rufe das Tool NUR EINMAL auf und schreibe dann deine Analyse.""",
-            expected_output="""Klare Text-Beschreibung der visuellen Analyse mit Scores,
-            Farbcodes und konkreten Verbesserungsvorschlägen.""",
+            IMPORTANT: Detect the language from any text in the ad image, and respond in that SAME LANGUAGE.
+            If the ad has English text, respond in English. If German, respond in German, etc.
+            Be clear and constructive. MAX 6 sentences.""",
+            expected_output="""Clear, constructive visual analysis (max 6 sentences) with score and specific improvement suggestions. Response in the SAME LANGUAGE as the ad content.""",
             agent=self.ad_visual_analyst,
         )
 
@@ -98,129 +93,111 @@ class AdQualityRaterCrew:
 
         # Task 3: Copywriting Analysis
         copywriting_task = Task(
-            description=f"""Analysiere die Konsistenz und Qualität des Copywritings zwischen
-            Ad und Landingpage nach LinkedIn B2B Best Practices.
+            description=f"""Evaluate copy quality. Be honest and constructive.
 
-            **Verfügbare Informationen:**
-            - Ad-Analyse: {{analyze_ad_task.output}}
-            - Landingpage-Text: {{scrape_lp_task.output}}
+            **Input:**
+            - Ad Analysis: {{analyze_ad_task.output}}
+            - Landing Page: {{scrape_lp_task.output}}
 
-            Schreibe eine klare TEXT-ANALYSE:
-            1. Message Consistency Score (0-100): Wie konsistent?
-            2. Tonalität: Pädagogisch oder werblich? Beschreibung?
-            3. CTA-Alignment: Passen die CTAs zusammen?
-            4. Pain Points: Klar adressiert?
-            5. PIO-Formel: Angewendet? (Pain-Impact-Offer)
-            6. Textlängen: Intro < 150? Headline < 70?
-            7. Psychologische Trigger: Welche genutzt?
-            8. Verbesserungsvorschläge mit konkreten Text-Beispielen""",
-            expected_output="""Klare Text-Analyse der Copywriting-Qualität mit Scores,
-            konkreten Beispielen und Verbesserungsvorschlägen.""",
+            **Evaluate:**
+            1. Consistency Ad→LP: X/100
+            2. Tone: Educational or salesy?
+            3. CTA: Appropriate? Yes/No
+            4. Pain Point: Clear? Yes/No
+            5. PIO Formula: Present? Yes/No
+            6. Length: Intro >150 chars? Headline >70 chars?
+            7. Triggers: Which? (Specificity, Familiarity, etc.)
+
+            **Improvement:** Ready-to-use text suggestion OR "Good as is"
+
+            IMPORTANT: Use the SAME LANGUAGE as detected in the ad visual analysis.
+            Be clear and constructive. MAX 6 sentences.""",
+            expected_output="""Clear copywriting analysis (max 6 sentences) with score and ready-to-use improvement text. Response in the SAME LANGUAGE as the ad content.""",
             agent=self.copywriting_expert,
             context=[analyze_ad_task, scrape_lp_task],
         )
 
-        # Task 4: Brand Compliance Check
+        # Task 4: Brand Compliance Check (OPTIONAL - only if guidelines provided)
         brand_compliance_task = Task(
-            description=f"""Prüfe die Markenkonformität von Ad und Landingpage.
+            description=f"""ONLY if brand guidelines are provided: Quick brand compliance check.
 
             **Brand Guidelines:**
-            {self.brand_guidelines if self.brand_guidelines else "Keine spezifischen Guidelines - prüfe allgemeine Markenkonsistenz"}
+            {self.brand_guidelines if self.brand_guidelines else "NO Guidelines - SKIP this analysis"}
 
-            **Verfügbare Informationen:**
-            - Ad-Analyse: {{analyze_ad_task.output}}
-            - Landingpage-Text: {{scrape_lp_task.output}}
+            **If guidelines provided:**
+            - Quick check: Tone, colors, forbidden words
+            - Score (0-100): Overall rating
+            - MAX 2-3 sentences feedback
 
-            Schreibe eine klare TEXT-ANALYSE:
-            1. Brand Score (0-100): Gesamtbewertung Markenkonformität
-            2. Tonalität-Alignment: Passt zur Marke?
-            3. Visuelle Konsistenz: Farben, Fonts korrekt?
-            4. Verbotene Elemente: Gibt es Verstöße? (Liste auf)
-            5. Guideline Coverage (0-100%): Wie viel geprüft?
-            6. Verbesserungsvorschläge""",
-            expected_output="""Klare Text-Analyse der Markenkonformität mit Score
-            und konkreten Verbesserungsvorschlägen.""",
+            **If NO guidelines:**
+            - Write: "No brand guidelines provided."
+
+            IMPORTANT: Use the SAME LANGUAGE as detected in previous analyses.
+            Be BRIEF. Maximum 3 sentences.""",
+            expected_output="""Brief brand analysis (max 3 sentences) OR "No guidelines provided". Response in the SAME LANGUAGE as the ad content.""",
             agent=self.brand_consistency_agent,
             context=[analyze_ad_task, scrape_lp_task],
         )
 
-        # Task 5: Synthesize Final Report (TEXT FORMAT)
+        # Task 5: Synthesize Final Report
         synthesize_report_task = Task(
-            description=f"""Erstelle einen umfassenden, gut lesbaren Text-Report über die Ad-Qualität.
+            description=f"""Create a CONCISE, CLEAR performance report.
 
-            **Analysiere folgende Aspekte:**
-            - Visual Analysis: {{analyze_ad_task.output}}
-            - Copywriting Feedback: {{copywriting_task.output}}
-            - Brand Compliance: {{brand_compliance_task.output}}
+            **Input Analyses:**
+            - Visual: {{analyze_ad_task.output}}
+            - Copy: {{copywriting_task.output}}
+            - Brand: {{brand_compliance_task.output}}
 
-            **Report-Struktur:**
+            **Report Structure (BRIEF!):**
 
-            # LinkedIn Ad Qualitäts-Analyse
+            # 📊 Ad Performance Analysis
 
-            **Ad-URL:** {self.ad_url}
-            **Landing-Page-URL:** {self.landing_page_url}
-            **Kampagnenziel:** {self.campaign_goal}
-            **Zielgruppe:** {self.target_audience}
+            **Score:** X/100 (Visual 40%, Copy 50%, Brand 10%)
+            **Assessment:** [Good/Needs Improvement/Poor - BE HONEST]
 
             ---
 
-            ## 🎨 Visuelle Analyse
+            ## 🎨 Visual (MAX 4 sentences)
+            - Format: [1:1 or other? Assessment]
+            - Authenticity: [Stock photo? Yes/No]
+            - Text Overlay: [Assessment]
+            - **Improvement:** [Specific suggestion OR "Good as is"]
 
-            [Beschreibe die visuelle Qualität des Ads basierend auf LinkedIn B2B Best Practices]
-            - Format und Komposition
-            - Farbpalette und Emotionale Wirkung
-            - CTA-Sichtbarkeit
-            - Markenelemente
-            - Authentizität vs. Stockfoto
+            ## ✍️ Copy (MAX 4 sentences)
+            - Consistency Ad→LP: [Score 0-100]
+            - Tone: [Salesy/Educational]
+            - PIO Formula: [Yes/No]
+            - **Improvement:** [Specific text suggestion OR "Good as is"]
 
-            ## ✍️ Copywriting & Messaging
+            ## 🎯 Brand (MAX 2 sentences - OR skip if no guidelines)
+            - [Brief feedback OR "No guidelines provided"]
 
-            [Analysiere die Konsistenz zwischen Ad und Landing Page]
-            - Message Consistency (Ad ↔ Landing Page)
-            - Tonalität und Ansprache
-            - CTA-Alignment
-            - Pain Points Coverage
-            - PIO-Formel Anwendung (Pain-Impact-Offer)
-            - Psychologische Trigger
+            ## 🔥 TOP 2 IMPROVEMENTS (Only if needed!)
 
-            ## 🎯 Brand Compliance
+            **1. [Highest Impact - e.g. "Headline"]**
+            ❌ Current: "[Show current text]"
+            ✅ Suggested: "[Ready-to-use new text]"
+            Expected Impact: +X%
 
-            [Bewerte die Markenkonformität]
-            - Tonalität-Alignment
-            - Visuelle Konsistenz
-            - Verbotene Elemente (falls vorhanden)
-            - Guidelines Coverage
+            **2. [Second Priority - e.g. "CTA"]**
+            ❌ Current: "[Show current text]"
+            ✅ Suggested: "[Ready-to-use new text]"
+            Expected Impact: +X%
 
-            ## 💡 Konkrete Textvorschläge
+            **RULES:**
+            - BRIEF: Maximum 3-4 sentences per section
+            - CLEAR: Be specific and constructive
+            - ACTIONABLE: Every critique includes a concrete fix
+            - FOCUS: Only TOP 2 improvements for highest impact
+            - Skip brand section if no guidelines provided
+            - LANGUAGE: Use the SAME LANGUAGE as detected in all previous analyses
 
-            [Gib 2-3 konkrete Empfehlungen mit MEHREREN Textalternativen]
-
-            **Format:**
-
-            **🔴 [Was ändern]**
-            **Option 1:** "[Konkreter Textvorschlag 1]"
-            **Option 2:** "[Konkreter Textvorschlag 2]"
-            **Option 3:** "[Konkreter Textvorschlag 3]"
-            Impact: +X%
-
-            **🟡 [Was ändern]**
-            **Option 1:** "[Konkreter Textvorschlag 1]"
-            **Option 2:** "[Konkreter Textvorschlag 2]"
-            Impact: +X%
-
-            **WICHTIG:**
-            - 2-3 Empfehlungen
-            - IMMER konkrete Textvorschläge geben
-            - Mindestens 2 Optionen pro Empfehlung
-            - Direkt copy-paste-bar
-            - Impact-Zahl angeben
-
-            Schreibe einen gut strukturierten, leicht lesbaren Text-Report.""",
-            expected_output="""Ein umfassender Text-Report in Markdown-Format mit:
-            - Visueller Analyse
-            - Copywriting Analyse
-            - Brand Compliance
-            - NUR 2 ultra-kurze Empfehlungen (je 1-2 Sätze)""",
+            Be concise and constructive.""",
+            expected_output="""Concise performance report (max 15 sentences total) with:
+            - Clear assessment
+            - Top 2 improvements with ready-to-use text
+            - Constructive feedback
+            - Response in the SAME LANGUAGE as the ad content""",
             agent=self.quality_rating_synthesizer,
             context=[analyze_ad_task, scrape_lp_task, copywriting_task, brand_compliance_task],
         )

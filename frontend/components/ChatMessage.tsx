@@ -66,10 +66,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                 <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
               </span>
             </div>
-          ) : message.report ? (
+          ) : !isUser && !isSystem ? (
             <div className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-gray-700 prose-strong:text-gray-900 prose-ul:text-gray-700 prose-li:text-gray-700">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {typeof message.report === 'string' ? message.report : JSON.stringify(message.report, null, 2)}
+                {message.content}
               </ReactMarkdown>
             </div>
           ) : (

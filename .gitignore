@@ -254,8 +254,12 @@ service-account.json
 # =========================
 # Documentation (Temporary)
 # =========================
-# PLANNING.md
-# IMPLEMENTATION_STATUS.md
+PLANNING.md
+IMPLEMENTATION_STATUS.md
+PRD.md
+GITHUB_READY_CHECKLIST.md
+SECURITY_GITHUB_SETUP.md
+.playwright-mcp/
 
 # =========================
 # Testing

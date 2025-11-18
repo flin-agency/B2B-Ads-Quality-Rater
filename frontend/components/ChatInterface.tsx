@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import type { AdQualityReport } from "@/lib/types";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
@@ -11,7 +10,6 @@ export interface Message {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
-  report?: AdQualityReport;
   isLoading?: boolean;
   agentLogs?: string[];
 }
@@ -38,28 +36,36 @@ export default function ChatInterface({
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] max-w-5xl mx-auto">
+    <div className="flex flex-col h-[calc(100vh-280px)]">
       {/* Messages Container */}
-      <Card className="flex-1 overflow-hidden flex flex-col border-gray-200 shadow-lg">
+      <Card className="flex-1 overflow-hidden flex flex-col border-gray-200 shadow-sm">
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center mb-6 shadow-xl">
-                <span className="text-4xl">🎯</span>
+              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                <span className="text-3xl">🎯</span>
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Willkommen beim Ads Quality Rater
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Bereit für die Analyse
               </h2>
-              <p className="text-gray-600 max-w-md mb-6">
-                Ich analysiere deine Werbeanzeigen und Landingpages auf Kohärenz,
-                Qualität und Markenkonformität.
+              <p className="text-gray-600 max-w-lg mb-8 text-sm leading-relaxed">
+                Lade dein Ad-Motiv hoch und gib die Landingpage-URL ein, um eine detaillierte Qualitätsanalyse zu erhalten.
               </p>
-              <div className="bg-gray-50 rounded-lg p-4 max-w-md text-left text-sm">
-                <p className="font-medium text-gray-700 mb-2">Zum Starten benötige ich:</p>
-                <ul className="space-y-1 text-gray-600">
-                  <li>• URL zu deinem Ad-Motiv (Bild-URL)</li>
-                  <li>• URL zur Landingpage</li>
-                  <li>• Optional: Brand Guidelines als JSON</li>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-5 max-w-md text-left">
+                <p className="font-medium text-gray-900 mb-3 text-sm">Benötigte Informationen:</p>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Ad-Motiv (Datei oder URL)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Landingpage URL</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Optional: Zielgruppe, Kampagnenziel & Brand Guidelines</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -74,7 +80,7 @@ export default function ChatInterface({
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <div className="border-t border-gray-200 p-5 bg-white">
           <ChatInput onSubmit={onAnalyze} isAnalyzing={isAnalyzing} />
         </div>
       </Card>

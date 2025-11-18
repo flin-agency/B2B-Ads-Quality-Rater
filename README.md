@@ -1,6 +1,6 @@
 # 🎯 Ads Quality Rater
 
-KI-basierter Quality Rater mit Crew AI + Brand Agent für automatisierte Bewertung von Ad-LP-Kohärenz und Markenkonformität.
+KI-basierter Quality Rater mit Crew AI + Gemini 2.0 Flash für automatisierte Bewertung von Ad-LP-Kohärenz und Markenkonformität.
 
 ## 📋 Übersicht
 
@@ -10,7 +10,46 @@ Dieses System analysiert automatisiert die Qualität und Konsistenz von Werbeanz
 - **Landingpage-Scraping** (Playwright für dynamische Seiten)
 - **Copywriting-Bewertung** (Message Match, Tonalität)
 - **Brand-Compliance-Prüfung** gegen Guidelines
-- **Strukturierte JSON-Reports** (Pydantic-validiert)
+- **Streaming-Interface** mit Echtzeit-Updates
+
+## 🚀 Quick Start
+
+### Voraussetzungen
+
+- Python 3.11+
+- Node.js 18+
+- Gemini API Key ([hier erstellen](https://makersuite.google.com/app/apikey))
+
+### Installation & Start
+
+```bash
+# 1. Repository klonen
+git clone https://github.com/your-org/ads-quality-rater.git
+cd ads-quality-rater
+
+# 2. Environment-Variablen konfigurieren
+cp .env.example .env
+# Öffne .env und füge deinen Gemini API Key ein:
+# GEMINI_API_KEY=your-actual-api-key-here
+
+# 3. Alles starten (Backend + Frontend)
+chmod +x start.sh
+./start.sh
+```
+
+Das wars! Die App läuft jetzt auf:
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8000
+- **API Docs:** http://localhost:8000/docs
+
+### Was macht start.sh?
+
+1. ✅ Prüft `.env` und `GEMINI_API_KEY`
+2. 📦 Installiert Backend-Dependencies (Python venv)
+3. 📦 Installiert Frontend-Dependencies (npm)
+4. 🚀 Startet Backend (Port 8000)
+5. 🚀 Startet Frontend (Port 3000)
+6. 🛑 Stoppt beide Server mit `Ctrl+C`
 
 ## 🏗️ Architektur
 
@@ -22,194 +61,55 @@ Das System verwendet 5 spezialisierte Agents in sequentieller Ausführung:
 2. **Landing_Page_Scraper** → Extrahiert LP-Text
 3. **Copywriting_Expert** → Bewertet Message Match
 4. **Brand_Consistency_Agent** → Prüft Markenkonformität
-5. **Quality_Rating_Synthesizer** → Erstellt finalen Report
+5. **Quality_Rating_Synthesizer** → Erstellt finalen Markdown-Report
 
 ### Tech Stack
 
-- **Framework:** Crew AI (Multi-Agenten-Orchestrierung)
-- **LLM:** Gemini 2.0 Flash (Text + Vision)
-- **API:** FastAPI
-- **Scraping:** Playwright + trafilatura
-- **Validation:** Pydantic 2.x
-- **Testing:** pytest
+**Backend:**
+- Framework: Crew AI (Multi-Agenten-Orchestrierung)
+- LLM: Gemini 2.0 Flash (Text + Vision)
+- API: FastAPI mit Server-Sent Events (SSE)
+- Scraping: Playwright + trafilatura
+- Validation: Pydantic 2.x
 
-## 🚀 Quick Start
+**Frontend:**
+- Framework: Next.js 15 (Turbopack)
+- Styling: Tailwind CSS
+- Markdown: React Markdown
+- TypeScript: 5.x
 
-### Voraussetzungen
+## 💻 Verwendung
 
-- Python 3.11+
-- Node.js 18+
-- Gemini API Key (https://makersuite.google.com/app/apikey)
+### In der UI
 
-### Installation
+1. Öffne http://localhost:3000
+2. Gib Ad-URL oder lade Ad-Bild hoch
+3. Gib Landingpage-URL ein
+4. Optional: Zielgruppe, Kampagnenziel, Brand Guidelines
+5. "Analyse starten" klicken
+6. Sieh zu, wie die Agents in Echtzeit arbeiten
+7. Erhalte detailliertes Markdown-Report
 
-```bash
-# 1. Repository klonen
-git clone https://github.com/your-org/ads-quality-rater.git
-cd ads-quality-rater/backend
-
-# 2. Virtual Environment erstellen
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-# oder: venv\Scripts\activate  # Windows
-
-# 3. Dependencies installieren
-pip install -r requirements.txt
-
-# 4. Playwright Browser installieren
-playwright install chromium
-
-# 5. Environment-Variablen konfigurieren
-cp .env.example .env
-# Öffne .env und füge deinen Gemini API Key ein
-```
-
-### .env Konfiguration
+### Via API
 
 ```bash
-GEMINI_API_KEY=your-gemini-api-key-here
-GEMINI_MODEL=gemini-2.0-flash-exp
-ENVIRONMENT=development
-LOG_LEVEL=INFO
+curl -X POST http://localhost:8000/api/v1/analyze/stream \
+  -F "ad_url=https://example.com/ad.jpg" \
+  -F "landing_page_url=https://example.com/landing" \
+  -F "target_audience=Young professionals (25-35)"
 ```
 
-### Tests ausführen
-
-```bash
-# Alle Tests
-pytest tests/ -v
-
-# Nur Unit-Tests (schnell, kein API-Key nötig)
-pytest tests/unit -v
-
-# Mit Coverage
-pytest --cov=src --cov-report=html
+**Streaming Response:**
 ```
-
-### Server starten
-
-```bash
-# Development-Server
-uvicorn src.api.main:app --reload --port 8000
-
-# Server läuft auf: http://localhost:8000
-# API Docs (Swagger): http://localhost:8000/docs
-```
-
-## 📖 API Usage
-
-### Health Check
-
-```bash
-curl http://localhost:8000/health
-```
-
-**Response:**
-```json
-{
-  "status": "healthy",
-  "timestamp": "2025-11-03T18:30:00Z",
-  "services": {
-    "gemini": "healthy"
-  }
-}
-```
-
-### Analyse starten
-
-```bash
-curl -X POST http://localhost:8000/api/v1/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "ad_url": "https://example.com/ad.jpg",
-    "landing_page_url": "https://example.com/landing",
-    "brand_guidelines": {
-      "tone_of_voice": ["professional", "friendly"],
-      "prohibited_words": ["cheap", "free"],
-      "color_palette": {
-        "primary": "#FF6B35",
-        "secondary": "#004E89"
-      },
-      "visual_style": "minimalist, modern",
-      "values": ["transparency", "quality"]
-    },
-    "target_audience": "Young professionals (25-35)"
-  }'
-```
-
-**Response:**
-```json
-{
-  "analysis_id": "abc-123-def-456",
-  "status": "completed",
-  "report": {
-    "report_id": "abc-123-def-456",
-    "timestamp": "2025-11-03T18:35:42Z",
-    "ad_url": "https://example.com/ad.jpg",
-    "landing_page_url": "https://example.com/landing",
-    "overall_score": 87.5,
-    "visual_analysis": {
-      "color_palette": ["#FF6B35", "#004E89", "#FFFFFF"],
-      "composition_score": 85.0,
-      "cta_visibility": 90.0,
-      ...
-    },
-    "copywriting_feedback": {
-      "message_consistency_score": 78.0,
-      "tone_match": true,
-      ...
-    },
-    "brand_compliance": {
-      "brand_score": 92.0,
-      "prohibited_elements": [],
-      ...
-    },
-    "success": true,
-    "processing_time_seconds": 42.3,
-    "confidence_level": "High"
-  }
-}
-```
-
-## 📁 Projektstruktur
-
-```
-ads-quality-rater/
-├── backend/
-│   ├── src/
-│   │   ├── agents/           # 5 Crew AI Agents
-│   │   ├── tools/            # Gemini Vision, Playwright, trafilatura
-│   │   ├── models/           # Pydantic-Modelle
-│   │   ├── crew/             # Crew-Orchestrierung
-│   │   ├── api/              # FastAPI
-│   │   ├── utils/            # Logger, Helpers
-│   │   └── config/           # Settings
-│   ├── tests/
-│   │   ├── unit/             # Unit-Tests (13 tests, alle bestanden ✅)
-│   │   ├── integration/      # Integration-Tests
-│   │   └── e2e/              # End-to-End-Tests
-│   ├── config/
-│   │   └── brand_guidelines/ # Beispiel-Guidelines
-│   ├── requirements.txt
-│   └── README.md
-├── PLANNING.md               # Detaillierte Implementierungsplanung
-├── PRD.md                    # Product Requirements Document
-└── README.md                 # Dieses Dokument
-```
-
-## 🧪 Test-Status
-
-**Alle Backend-Tests bestanden! ✅**
-
-```
-tests/unit/test_models.py ............ 8 passed
-tests/unit/test_api.py ............... 5 passed
-===================================== 13 passed in 7.32s
+data: {"type": "log", "data": "🎨 Analysiere Ad-Visual..."}
+data: {"type": "log", "data": "🌐 Scrappe Landingpage..."}
+data: {"type": "log", "data": "✍️ Bewerte Copywriting..."}
+data: {"type": "result", "data": "# Ad Quality Report\n\n..."}
 ```
 
 ## 🎨 Brand Guidelines Format
 
-Brand Guidelines können als JSON strukturiert werden:
+Brand Guidelines können als JSON-Text eingefügt werden:
 
 ```json
 {
@@ -222,144 +122,159 @@ Brand Guidelines können als JSON strukturiert werden:
     "accent": "#F7B32B"
   },
   "visual_style": "minimalist, modern, clean",
-  "values": ["transparency", "quality", "sustainability"],
-  "typography": {
-    "allowed_fonts": ["Inter", "Helvetica", "Arial"],
-    "prohibited_fonts": ["Comic Sans", "Papyrus"]
-  }
+  "values": ["transparency", "quality", "sustainability"]
 }
 ```
 
-Beispiel: `backend/config/brand_guidelines/example_brand.json`
+Beispiel: [backend/config/brand_guidelines/example_brand.json](backend/config/brand_guidelines/example_brand.json)
 
-## 📊 Score-Berechnung
+## 📁 Projektstruktur
 
-Der Overall Score wird gewichtet berechnet:
-
-```python
-overall_score = (
-    visual_score * 0.25 +      # 25% Gewicht
-    copywriting_score * 0.35 + # 35% Gewicht
-    brand_score * 0.40         # 40% Gewicht (höchste Priorität)
-)
+```
+ads-quality-rater/
+├── .env                    # Environment-Variablen (nicht committen!)
+├── .env.example            # Template für .env
+├── start.sh                # Quickstart-Script
+├── backend/
+│   ├── src/
+│   │   ├── agents/         # 5 Crew AI Agents
+│   │   ├── tools/          # Gemini Vision, Playwright, trafilatura
+│   │   ├── crew/           # Crew-Orchestrierung
+│   │   └── api/            # FastAPI mit SSE
+│   ├── requirements.txt
+│   └── venv/              # Python Virtual Environment
+├── frontend/
+│   ├── app/               # Next.js App Router
+│   ├── components/        # React Components
+│   └── node_modules/      # npm Dependencies
+└── README.md              # Dieses Dokument
 ```
 
-**Confidence Level:**
-- **High:** Alle Analysen erfolgreich, keine Fehler
-- **Medium:** Einige Warnungen vorhanden
-- **Low:** Fehler aufgetreten oder unvollständige Daten
-
 ## 🔧 Development
+
+### Manueller Start (ohne start.sh)
+
+**Backend:**
+```bash
+cd backend
+source venv/bin/activate
+python3 -m uvicorn src.api.main:app --reload --port 8000
+```
+
+**Frontend (neues Terminal):**
+```bash
+cd frontend
+npm run dev
+```
+
+### Tests ausführen
+
+```bash
+cd backend
+source venv/bin/activate
+pytest tests/ -v
+```
 
 ### Code-Style
 
 ```bash
-# Formatierung mit Black
+# Backend
+cd backend
 black src/ tests/
-
-# Linting mit Ruff
 ruff check src/ tests/
 
-# Type-Checking mit MyPy
-mypy src/
-```
-
-### Debugging
-
-Strukturiertes JSON-Logging aktiviert:
-
-```python
-from utils.logger import logger
-
-logger.info("Analysis started", ad_url="...", lp_url="...")
-logger.error("Scraping failed", error=str(e), url="...")
+# Frontend
+cd frontend
+npm run lint
 ```
 
 ## 🐛 Troubleshooting
 
-### Gemini API Fehler
+### GEMINI_API_KEY nicht gesetzt
 
 ```bash
-# Prüfen ob API Key gesetzt ist
-echo $GEMINI_API_KEY
+# Prüfen ob .env existiert
+cat .env | grep GEMINI_API_KEY
 
-# Testen
-python -c "import google.generativeai as genai; genai.configure(api_key='YOUR_KEY'); print('OK')"
+# Sollte ausgeben:
+# GEMINI_API_KEY=AIza...
+
+# Falls nicht, kopiere .env.example und füge deinen Key ein
+cp .env.example .env
 ```
 
 ### Playwright Browser fehlt
 
 ```bash
-playwright install chromium
-
-# macOS/Linux: System-Dependencies
-playwright install-deps chromium
-```
-
-### Import-Fehler
-
-```bash
-# Python-Path setzen
-export PYTHONPATH="${PYTHONPATH}:$(pwd)/backend/src"
-```
-
-## 📝 Nächste Schritte
-
-### Für lokale Tests:
-
-1. ✅ **Dependencies installiert**
-2. ✅ **Tests bestanden**
-3. ⏳ **Server starten:** `uvicorn src.api.main:app --reload`
-4. ⏳ **Gemini API Key konfigurieren** in `.env`
-5. ⏳ **Erste Analyse durchführen** (siehe API Usage oben)
-
-### Empfohlener Workflow:
-
-#### Backend starten:
-
-```bash
-# 1. .env konfigurieren
-cp backend/.env.example backend/.env
-# Füge deinen Gemini API Key ein
-
-# 2. Backend-Server starten
 cd backend
 source venv/bin/activate
-uvicorn src.api.main:app --reload --port 8000
+playwright install chromium
 ```
 
-Backend läuft auf: http://localhost:8000
-API Docs: http://localhost:8000/docs
-
-#### Frontend starten (neues Terminal):
+### Port 8000 oder 3000 bereits belegt
 
 ```bash
-cd frontend
-npm install
-npm run dev
+# Backend-Port frei machen
+lsof -ti:8000 | xargs kill -9
+
+# Frontend-Port frei machen
+lsof -ti:3000 | xargs kill -9
 ```
 
-Frontend läuft auf: http://localhost:3000
+### Module-Import-Fehler
 
-#### Test-Analyse durchführen:
+```bash
+# Sicherstellen, dass uvicorn als Python-Modul läuft
+cd backend
+python3 -m uvicorn src.api.main:app --reload
+# NICHT: uvicorn src.api.main:app
+```
 
-1. Öffne http://localhost:3000 im Browser
-2. Gib Ad-URL und LP-URL ein
-3. Optional: Brand Guidelines hinzufügen
-4. "Analyse starten" klicken
-5. Ergebnisse in 30-60 Sekunden
+## 📊 Features im Detail
 
-## 📚 Dokumentation
+### Streaming-Interface
 
-- **PRD.md:** Vollständige Product Requirements
-- **PLANNING.md:** Technische Implementierungsplanung
-- **backend/README.md:** Backend-spezifische Dokumentation
-- **/docs Endpoint:** Swagger UI für API-Dokumentation
+- Echtzeit-Updates während der Analyse
+- Agent-Logs zeigen Fortschritt
+- Server-Sent Events (SSE) für Live-Updates
+
+### Markdown-Reports
+
+- Strukturierte, lesbare Reports
+- Direkt im UI gerendert
+- Enthält Scores, Empfehlungen, Details
+
+### File & URL Support
+
+- Ad-Bilder per Upload oder URL
+- Landingpages via URL
+- Brand Guidelines als JSON-Text
+
+## 📝 Environment-Variablen
+
+**Minimal (.env):**
+```bash
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+**Erweitert (.env):**
+```bash
+# Gemini API
+GEMINI_API_KEY=your-gemini-api-key
+MODEL=gemini-2.0-flash-exp
+
+# App Config
+ENVIRONMENT=development
+LOG_LEVEL=INFO
+
+# Frontend (für Production)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
 ## 🤝 Support
 
-- **Issues:** GitHub Issues
-- **Docs:** `http://localhost:8000/docs` (wenn Server läuft)
+- **Issues:** [GitHub Issues](https://github.com/your-org/ads-quality-rater/issues)
+- **API Docs:** http://localhost:8000/docs (wenn Server läuft)
 - **Contact:** team@flin.com
 
 ## 📄 License
@@ -368,6 +283,6 @@ MIT
 
 ---
 
-**Status:** ✅ Backend implementiert und getestet
-**Nächster Schritt:** API-Key konfigurieren und erste Analysen durchführen
-**Letzte Aktualisierung:** November 2025
+**Status:** ✅ Vollständig implementiert und einsatzbereit
+**Powered by:** Gemini 2.0 Flash & Crew AI
+**© 2025 flin. All rights reserved.**

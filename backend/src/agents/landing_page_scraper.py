@@ -1,8 +1,8 @@
 """Landing Page Scraper Agent"""
 
 from crewai import Agent
-from tools.playwright_scraping_tool import PlaywrightScrapingTool
-from tools.trafilatura_parser_tool import TrafilaturaParserTool
+from tools.playwright_scraping_tool import scrape_landing_page
+from tools.trafilatura_parser_tool import parse_with_trafilatura
 from utils.llm_config import get_gemini_llm
 
 
@@ -29,7 +29,7 @@ def create_landing_page_scraper() -> Agent:
 
         Bei Problemen gibst du klare Fehlermeldungen, damit andere Agents
         entsprechend reagieren können.""",
-        tools=[PlaywrightScrapingTool(), TrafilaturaParserTool()],
+        tools=[scrape_landing_page, parse_with_trafilatura],
         llm=get_gemini_llm(),
         verbose=True,
         allow_delegation=False,

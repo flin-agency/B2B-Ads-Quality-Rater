@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import ChatInterface, { Message } from "@/components/ChatInterface";
-import type { AdQualityReport } from "@/lib/types";
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -91,7 +90,7 @@ export default function Home() {
         throw new Error("No response body");
       }
 
-      let result: AdQualityReport | null = null;
+      let resultText: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -106,7 +105,7 @@ export default function Home() {
               const data = JSON.parse(line.slice(6));
 
               if (data.type === "result") {
-                result = data.data;
+                resultText = data.data;
               } else if (data.type === "error") {
                 throw new Error(data.data);
               } else if (data.type === "log") {
@@ -128,11 +127,11 @@ export default function Home() {
         }
       }
 
-      if (!result) {
+      if (!resultText) {
         throw new Error("No result received");
       }
 
-      // Remove loading message and add report
+      // Remove loading message and add result as markdown content
       setMessages(prev => {
         const withoutLoading = prev.filter(m => !m.isLoading);
         return [
@@ -140,9 +139,8 @@ export default function Home() {
           {
             id: Date.now().toString(),
             role: "assistant",
-            content: "✅ Analyse abgeschlossen",
+            content: resultText,
             timestamp: new Date(),
-            report: result,
           },
         ];
       });
@@ -168,21 +166,23 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4 py-8">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl">🎯</span>
+        <div className="mb-12">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-xl">🎯</span>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-              Ads Quality Rater
-            </h1>
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-900">
+                Ads Quality Rater
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5">
+                KI-basierte Bewertung von Ad-LP-Kohärenz und Markenkonformität
+              </p>
+            </div>
           </div>
-          <p className="text-gray-600">
-            KI-basierte Bewertung von Ad-LP-Kohärenz und Markenkonformität
-          </p>
         </div>
 
         {/* Chat Interface */}
@@ -193,10 +193,11 @@ export default function Home() {
         />
 
         {/* Footer */}
-        <footer className="mt-8 text-center text-xs text-gray-400">
+        <footer className="mt-12 text-center text-xs text-gray-500 border-t border-gray-200 pt-6">
           <p>
-            Powered by Gemini 2.0 Flash & Crew AI • © 2025 flin
+            Powered by Gemini 2.0 Flash & Crew AI
           </p>
+          <p className="mt-1 text-gray-400">© 2025 flin. All rights reserved.</p>
         </footer>
       </div>
     </main>
