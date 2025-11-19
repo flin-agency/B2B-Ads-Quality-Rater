@@ -51,6 +51,47 @@ Das wars! Die App läuft jetzt auf:
 5. 🚀 Startet Frontend (Port 3000)
 6. 🛑 Stoppt beide Server mit `Ctrl+C`
 
+### Windows Quick Start (eingeschränkte Umgebung)
+
+Falls du in einer Windows-Umgebung arbeitest, in der weder `start.sh` noch das Aktivieren eines virtuellen Environments erlaubt ist, kannst du alles manuell mit den direkten Interpreter-Pfaden starten. Öffne PowerShell (ohne Admin-Rechte nötig) und führe die folgenden Schritte aus:
+
+```powershell
+# 1. Repository klonen und vorbereiten
+git clone https://github.com/your-org/ads-quality-rater.git
+cd ads-quality-rater
+copy .env.example .env   # Füge danach deinen GEMINI_API_KEY ein
+
+# 2. Virtuelle Umgebung anlegen (einmalig)
+py -3.11 -m venv backend\venv
+
+# 3. Backend-Dependencies ohne Aktivierung installieren
+backend\venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+```
+
+Backend starten (neues Terminal oder Tab):
+
+```powershell
+cd ads-quality-rater\backend
+..\venv\Scripts\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Frontend vorbereiten und starten (separates Terminal):
+
+```powershell
+cd ads-quality-rater\frontend
+npm install
+npm run dev
+```
+
+Optional (z. B. für Playwright-Browser in derselben eingeschränkten Umgebung):
+
+```powershell
+cd ads-quality-rater\backend
+..\venv\Scripts\playwright.exe install chromium
+```
+
+Da alle Kommandos die ausführbaren Dateien innerhalb von `backend\venv\Scripts\` direkt aufrufen, ist kein `activate.bat` nötig und auch restriktive Shell-Policies greifen nicht. Sobald beide Terminals laufen, erreichst du das Frontend unter http://localhost:3000 und die API unter http://localhost:8000/docs.
+
 ## 🏗️ Architektur
 
 ### Multi-Agent-System (Crew AI)
