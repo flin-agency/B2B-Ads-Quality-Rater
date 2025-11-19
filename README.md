@@ -71,8 +71,8 @@ backend\venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 Backend starten (neues Terminal oder Tab):
 
 ```powershell
-cd ads-quality-rater\backend
-.\venv\Scripts\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload
+cd ads-quality-rater
+.\backend\venv\Scripts\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Frontend vorbereiten und starten (separates Terminal):
@@ -86,8 +86,8 @@ npm run dev
 Optional (z. B. für Playwright-Browser in derselben eingeschränkten Umgebung):
 
 ```powershell
-cd ads-quality-rater\backend
-.\venv\Scripts\playwright.exe install chromium
+cd ads-quality-rater
+.\backend\venv\Scripts\playwright.exe install chromium
 ```
 
 Da alle Kommandos die ausführbaren Dateien innerhalb von `backend\venv\Scripts\` direkt aufrufen, ist kein `activate.bat` nötig und auch restriktive Shell-Policies greifen nicht. Sobald beide Terminals laufen, erreichst du das Frontend unter http://localhost:3000 und die API unter http://localhost:8000/docs.
