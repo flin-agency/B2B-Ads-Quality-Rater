@@ -61,8 +61,8 @@ git clone https://github.com/your-org/ads-quality-rater.git
 cd ads-quality-rater
 copy .env.example .env   # Füge danach deinen GEMINI_API_KEY ein
 
-# 2. Virtuelle Umgebung anlegen (einmalig)
-py -3.11 -m venv backend\venv
+# 2. Virtuelle Umgebung anlegen (einmalig, nutzt die neueste verfügbare Python-3-Version)
+py -3 -m venv backend\venv
 
 # 3. Backend-Dependencies ohne Aktivierung installieren
 backend\venv\Scripts\python.exe -m pip install -r backend\requirements.txt
