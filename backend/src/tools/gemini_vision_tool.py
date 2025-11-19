@@ -2,8 +2,8 @@
 
 from crewai.tools import tool
 from typing import Optional, Any
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai import types
 import requests
 import os
 import base64
@@ -18,7 +18,8 @@ def get_gemini_client():
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable not set")
     model_name = os.getenv("MODEL", "gemini-2.5-flash")
-    client = genai.Client(api_key=api_key)
+    genai.configure(api_key=api_key)
+    client = genai.GenerativeModel(model_name)
     return client, model_name
 
 
@@ -117,10 +118,11 @@ MAX 6 sentences. Be clear and constructive."""
             }
 
         # Create Part from bytes (proper Gemini SDK method)
-        image_part = types.Part.from_bytes(
-            data=final_bytes,
-            mime_type=final_mime_type
-        )
+        # For google-generativeai package, we pass a dict for inline data
+        image_part = {
+            "mime_type": final_mime_type,
+            "data": final_bytes
+        }
 
         # Generate analysis with retry logic (up to 3 attempts)
         max_retries = 3
@@ -128,10 +130,9 @@ MAX 6 sentences. Be clear and constructive."""
 
         for attempt in range(max_retries):
             try:
-                response = client.models.generate_content(
-                    model=model_name,
+                response = client.generate_content(
                     contents=[prompt, image_part],
-                    config=types.GenerateContentConfig(
+                    generation_config=genai.types.GenerationConfig(
                         temperature=0.1,
                         max_output_tokens=4096,
                     )
